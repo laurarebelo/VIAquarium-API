@@ -1,0 +1,9 @@
+bin/
+obj/
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+project.lock.json
+project.fragment.lock.json
+.idea/
