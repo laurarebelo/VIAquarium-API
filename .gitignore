@@ -7,3 +7,11 @@ packages/
 project.lock.json
 project.fragment.lock.json
 .idea/
+publish/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+appsettings.Development.json
