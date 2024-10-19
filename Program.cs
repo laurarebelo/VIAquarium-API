@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using VIAquarium_API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<AquariumContext>(options =>
     options.UseMySQL(builder.Configuration.GetConnectionString("AquariumDB")));
+
+builder.Services.AddScoped<IFishService, FishService>();
 
 // Add services to the container
 builder.Services.AddControllers(); // Add this to enable controllers
@@ -36,6 +39,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapControllers(); // This will automatically map routes from the controllers
+app.MapControllers();
 
 app.Run();

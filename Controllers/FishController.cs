@@ -1,32 +1,34 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using VIAquarium_API.Models;
+using VIAquarium_API.Services;
 
 [Route("api/[controller]")]
 [ApiController]
 public class FishController : ControllerBase
 {
-    private readonly AquariumContext _context;
+    private readonly IFishService fishService;
 
-    public FishController(AquariumContext context)
+    public FishController(IFishService service)
     {
-        _context = context;
+        fishService = service;
     }
+
+    // ======= BASIC ACTIONS ========= //
 
     // GET: api/fish
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Fish>>> GetFish()
     {
-        return await _context.Fish.ToListAsync();
+        var fishList = await fishService.GetAllFish();
+        return Ok(fishList);
     }
 
     // POST: api/fish
     [HttpPost]
     public async Task<ActionResult<Fish>> PostFish(string fishName)
     {
-        Fish fish = new Fish(fishName);
-        _context.Fish.Add(fish);
-        await _context.SaveChangesAsync();
-
+        Fish fish = await fishService.AddFish(fishName);
         return CreatedAtAction(nameof(GetFish), new { id = fish.Id }, fish);
     }
 
@@ -34,15 +36,26 @@ public class FishController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteFish(int id)
     {
-        var fish = await _context.Fish.FindAsync(id);
-        if (fish == null)
+        bool fishRemoved = await fishService.RemoveFish(id);
+        return fishRemoved ? Ok(fishRemoved) : NotFound();
+    }
+
+
+    // =========== FISH NEEDS ============ //
+
+    // POST: api/fish/{fishId}/hunger
+    [HttpPost("{fishId}/hunger")]
+    public async Task<IActionResult> AddHungerPoints(int fishId, [FromBody] FeedRequest feedRequest)
+    {
+        if (!ModelState.IsValid)
         {
-            return NotFound();
+            return BadRequest(ModelState);
         }
-
-        _context.Fish.Remove(fish);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        Fish fish = await fishService.FeedFish(fishId, feedRequest.hungerPoints);
+        return Ok(new
+        {
+            fish.Id,
+            fish.HungerLevel
+        });
     }
 }
