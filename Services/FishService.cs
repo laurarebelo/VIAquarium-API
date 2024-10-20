@@ -14,7 +14,7 @@ public class FishService : IFishService
 
     public async Task<IEnumerable<Fish>> GetAllFish()
     {
-        return await UpdateAllFishHunger();
+        return await DecayAllFishHunger();
     }
 
     public async Task<Fish> GetFishById(int fishId)
@@ -55,7 +55,7 @@ public class FishService : IFishService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<Fish> UpdateFishHunger(int fishId)
+    public async Task<Fish> DecayFishHunger(int fishId)
     {
         Fish fish = await GetFishById(fishId);
         int hungerPointsLost = CalculateHungerLossSinceUpdate(fish.LastUpdatedHunger);
@@ -65,13 +65,13 @@ public class FishService : IFishService
         return fish;
     }
     
-    private async Task<List<Fish>> UpdateAllFishHunger()
+    private async Task<List<Fish>> DecayAllFishHunger()
     {
         List<Fish> allFish = await _context.Fish.ToListAsync();
         List<Fish> allFishUpdated = new List<Fish>();
         foreach (var fish in allFish)
         {
-            Fish newFish = await UpdateFishHunger(fish.Id);
+            Fish newFish = await DecayFishHunger(fish.Id);
             allFishUpdated.Add(newFish);
         }
         return allFishUpdated;
@@ -79,7 +79,7 @@ public class FishService : IFishService
 
     public async Task<Fish> FeedFish(int fishId, int howMuch)
     {
-        await UpdateFishHunger(fishId);
+        await DecayFishHunger(fishId);
         Fish fish = await GetFishById(fishId);
         fish.Feed(howMuch);
         await UpdateFish(fish);
