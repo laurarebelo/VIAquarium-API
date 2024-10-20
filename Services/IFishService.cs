@@ -6,7 +6,7 @@ public interface IFishService
     Task<Fish> GetFishById(int fishId);
     Task<Fish> AddFish(string fishName);
     Task<bool> RemoveFish(int fishId);
-    Task<Fish> UpdateFishHunger(int fishId);
+    Task<Fish> DecayFishHunger(int fishId);
     Task<Fish> FeedFish(int fishId, int howMuch);
 
 }
