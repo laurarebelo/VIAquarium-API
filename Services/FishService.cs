@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 namespace VIAquarium_API.Services;
@@ -58,6 +59,7 @@ public class FishService : IFishService
     {
         Fish fish = await GetFishById(fishId);
         int hungerPointsLost = CalculateHungerLossSinceUpdate(fish.LastUpdatedHunger);
+        if (hungerPointsLost == 0) return fish;
         fish.GetHungry(hungerPointsLost);
         await UpdateFish(fish);
         return fish;
@@ -86,8 +88,12 @@ public class FishService : IFishService
 
     private int CalculateHungerLossSinceUpdate(DateTime lastUpdate)
     {
-        TimeSpan howLongSinceLastUpdate = DateTime.Today - lastUpdate;
-        double minutesSinceLastUpdate = howLongSinceLastUpdate.Minutes;
+        TimeSpan howLongSinceLastUpdate = DateTime.Now - lastUpdate;
+        Console.WriteLine(DateTime.Now);
+        Console.WriteLine(lastUpdate);
+        Console.WriteLine(howLongSinceLastUpdate);
+        double minutesSinceLastUpdate = howLongSinceLastUpdate.TotalMinutes;
+        Console.WriteLine(minutesSinceLastUpdate);
         // For a fish to die in 7 days, it takes 100 minutes to lose 1 hunger point...
         int hungerPointsLost = (int)(minutesSinceLastUpdate / 100);
         return hungerPointsLost;
