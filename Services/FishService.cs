@@ -14,7 +14,7 @@ public class FishService : IFishService
 
     public async Task<IEnumerable<Fish>> GetAllFish()
     {
-        return await DecayAllFishHunger();
+        return await DecayAllFishStates();
     }
 
     public async Task<Fish> GetFishById(int fishId)
@@ -57,24 +57,34 @@ public class FishService : IFishService
 
     public async Task<Fish> DecayFishHunger(int fishId)
     {
+        return await DecayFishState(fishId, fish => 
+        {
+            int hungerPointsLost = CalculateLossSinceUpdate(fish.LastUpdatedHunger, 100);
+            if (hungerPointsLost > 0)
+            {
+                fish.GetHungry(hungerPointsLost);
+            }
+        });
+    }
+
+    public async Task<Fish> DecayFishSocial(int fishId)
+    {
+        return await DecayFishState(fishId, fish => 
+        {
+            int socialPointsLost = CalculateLossSinceUpdate(fish.LastUpdatedSocial, 144);
+            if (socialPointsLost > 0)
+            {
+                fish.GetLonely(socialPointsLost);
+            }
+        });
+    }
+
+    private async Task<Fish> DecayFishState(int fishId, Action<Fish> decayAction)
+    {
         Fish fish = await GetFishById(fishId);
-        int hungerPointsLost = CalculateHungerLossSinceUpdate(fish.LastUpdatedHunger);
-        if (hungerPointsLost == 0) return fish;
-        fish.GetHungry(hungerPointsLost);
+        decayAction(fish);
         await UpdateFish(fish);
         return fish;
-    }
-    
-    private async Task<List<Fish>> DecayAllFishHunger()
-    {
-        List<Fish> allFish = await _context.Fish.ToListAsync();
-        List<Fish> allFishUpdated = new List<Fish>();
-        foreach (var fish in allFish)
-        {
-            Fish newFish = await DecayFishHunger(fish.Id);
-            allFishUpdated.Add(newFish);
-        }
-        return allFishUpdated;
     }
 
     public async Task<Fish> FeedFish(int fishId, int howMuch)
@@ -86,16 +96,33 @@ public class FishService : IFishService
         return fish;
     }
 
-    private int CalculateHungerLossSinceUpdate(DateTime lastUpdate)
+    public async Task<Fish> PetFish(int fishId, int howMuch)
+    {
+        await DecayFishSocial(fishId);
+        Fish fish = await GetFishById(fishId);
+        fish.Pet(howMuch);
+        await UpdateFish(fish);
+        return fish;
+    }
+
+    private async Task<List<Fish>> DecayAllFishStates()
+    {
+        List<Fish> allFish = await _context.Fish.ToListAsync();
+        List<Fish> allFishUpdated = new List<Fish>();
+        foreach (var fish in allFish)
+        {
+            Fish updatedFish = await DecayFishHunger(fish.Id); 
+            updatedFish = await DecayFishSocial(updatedFish.Id);
+            allFishUpdated.Add(updatedFish);
+        }
+        return allFishUpdated;
+    }
+
+    private int CalculateLossSinceUpdate(DateTime lastUpdate, int lossInterval)
     {
         TimeSpan howLongSinceLastUpdate = DateTime.Now - lastUpdate;
-        Console.WriteLine(DateTime.Now);
-        Console.WriteLine(lastUpdate);
-        Console.WriteLine(howLongSinceLastUpdate);
         double minutesSinceLastUpdate = howLongSinceLastUpdate.TotalMinutes;
-        Console.WriteLine(minutesSinceLastUpdate);
-        // For a fish to die in 7 days, it takes 100 minutes to lose 1 hunger point...
-        int hungerPointsLost = (int)(minutesSinceLastUpdate / 100);
-        return hungerPointsLost;
+        int pointsLost = (int)(minutesSinceLastUpdate / lossInterval);
+        return pointsLost;
     }
 }
