@@ -43,19 +43,31 @@ public class FishController : ControllerBase
 
     // =========== FISH NEEDS ============ //
 
-    // POST: api/fish/{fishId}/hunger
-    [HttpPost("{fishId}/hunger")]
-    public async Task<IActionResult> AddHungerPoints(int fishId, [FromBody] FeedRequest feedRequest)
+    // POST: api/fish/{fishId}/{needType}}
+    [HttpPost("{fishId}/{needType}")]
+    public async Task<IActionResult> UpdateFishNeeds(int fishId, string needType, [FromBody] NeedsRequest needsRequest)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-        Fish fish = await fishService.FeedFish(fishId, feedRequest.hungerPoints);
-        return Ok(new
+
+        Fish fish;
+
+        switch (needType.ToLower())
         {
-            fish.Id,
-            fish.HungerLevel
-        });
+            case "hunger":
+                fish = await fishService.FeedFish(fishId, needsRequest.hungerPoints);
+                return Ok(new { fish.Id, fish.HungerLevel });
+
+            case "social":
+                fish = await fishService.PetFish(fishId, needsRequest.pettingPoints);
+                return Ok(new { fish.Id, fish.SocialLevel });
+
+            default:
+                return BadRequest("Invalid need type. Use 'hunger' or 'social'.");
+        }
     }
+
+    
 }
