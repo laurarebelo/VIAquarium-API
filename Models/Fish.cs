@@ -36,6 +36,20 @@ public class Fish
         LastUpdatedHunger = DateTime.Now;
     }
 
+    public void Pet(int amount)
+    {
+        SocialLevel += amount;
+        if (SocialLevel > 100) SocialLevel = 100;
+        LastUpdatedSocial = DateTime.Now;
+    }
+
+    public void GetLonely(int amount)
+    {
+        SocialLevel -= amount;
+        if (SocialLevel < 0) SocialLevel = 0;
+        LastUpdatedSocial = DateTime.Now;
+    }
+
     public void GetHungry(int amount)
     {
         HungerLevel -= amount;
