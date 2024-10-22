@@ -61,7 +61,7 @@ public class FishController : ControllerBase
                 return Ok(new { fish.Id, fish.HungerLevel });
 
             case "social":
-                fish = await fishService.PetFish(fishId, needsRequest.pettingPoints);
+                fish = await fishService.PetFish(fishId, needsRequest.socialPoints);
                 return Ok(new { fish.Id, fish.SocialLevel });
 
             default:

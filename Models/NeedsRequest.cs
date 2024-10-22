@@ -11,5 +11,5 @@ public class NeedsRequest
 
     [Required]
     [Range(1,100)]
-    public int pettingPoints { get; set; }
+    public int socialPoints { get; set; }
 }
