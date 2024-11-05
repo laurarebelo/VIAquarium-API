@@ -52,10 +52,6 @@ namespace VIAquarium_API.Services
                 if (hungerPointsLost > 0)
                 {
                     fish.GetHungry(hungerPointsLost);
-                    if (fish.HungerLevel == 0 && fish.DeathStartTime == null)
-                    {
-                        fish.DeathStartTime = DateTime.UtcNow;
-                    }
                 }
             });
         }
@@ -85,7 +81,6 @@ namespace VIAquarium_API.Services
             await DecayFishHunger(fishId);
             var fish = await GetFishById(fishId);
             fish.Feed(howMuch);
-            fish.DeathStartTime = null; // Reset DeathStartTime if fed
             await UpdateFish(fish);
             return fish;
         }
@@ -130,19 +125,17 @@ namespace VIAquarium_API.Services
 
         public async Task HandleFishDeaths()
         {
-            var threeDaysAgo = DateTime.UtcNow.AddDays(-3);
-            var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
     
             var fishToDie = await _context.Fish
                 .Where(f => 
-                    (f.HungerLevel == 0 && f.DeathStartTime.HasValue && f.DeathStartTime.Value <= threeDaysAgo) ||
-                    (f.SocialLevel == 0 && f.LastUpdatedSocial <= sevenDaysAgo)
+                    (f.HungerLevel == 0) ||
+                    (f.SocialLevel == 0 )
                 )
                 .ToListAsync();
     
             foreach (var fish in fishToDie)
             {
-                var causeOfDeath = (fish.HungerLevel == 0 && fish.DeathStartTime.HasValue && fish.DeathStartTime.Value <= threeDaysAgo)
+                var causeOfDeath = (fish.HungerLevel == 0)
                     ? "Hunger"
                     : "Loneliness";
 
@@ -156,11 +149,13 @@ namespace VIAquarium_API.Services
                     CauseOfDeath = causeOfDeath
                 };
 
-                _context.DeadFish.Add(deadFish);
+                await _context.DeadFish.AddAsync(deadFish);
                 _context.Fish.Remove(fish);
+                await _context.SaveChangesAsync();
+                
+                //if both hunger and loneliness are 0 it will die of hunger, do we care?
+                
             }
-
-            await _context.SaveChangesAsync();
         }
 
     }

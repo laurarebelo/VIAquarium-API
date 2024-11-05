@@ -7,4 +7,6 @@
     public int DaysLived { get; set; }
     public int RespectCount { get; set; } = 0;
     public string CauseOfDeath { get; set; }
+    
+    public DeadFish(){}
 }
