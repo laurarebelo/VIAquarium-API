@@ -102,16 +102,16 @@ namespace VIAquarium_API.Services
         private async Task<List<Fish>> DecayAllFishStates()
         {
             var allFish = await _context.Fish.ToListAsync();
-            var allFishUpdated = new List<Fish>();
 
             foreach (var fish in allFish)
             {
                 var updatedFish = await DecayFishHunger(fish.Id);
-                updatedFish = await DecayFishSocial(updatedFish.Id);
-                allFishUpdated.Add(updatedFish);
-            }
-
-            return allFishUpdated;
+                await DecayFishSocial(updatedFish.Id);
+            } 
+            await HandleFishDeaths();
+            List<Fish> fishListNew = await _context.Fish.ToListAsync();
+            
+            return fishListNew;
         }
 
         private int CalculateLossSinceUpdate(DateTime lastUpdate, int lossInterval)
@@ -132,22 +132,18 @@ namespace VIAquarium_API.Services
         {
             var threeDaysAgo = DateTime.UtcNow.AddDays(-3);
             var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
-
-            // Find fish that meet the death conditions
+    
             var fishToDie = await _context.Fish
                 .Where(f => 
-                    (f.HungerLevel == 0 && f.DeathStartTime.HasValue && f.DeathStartTime <= threeDaysAgo) ||
-                    (f.SocialLevel == 0 && f.SocialDeathStartTime.HasValue && f.SocialDeathStartTime <= sevenDaysAgo)
+                    (f.HungerLevel == 0 && f.DeathStartTime.HasValue && f.DeathStartTime.Value <= threeDaysAgo) ||
+                    (f.SocialLevel == 0 && f.LastUpdatedSocial <= sevenDaysAgo)
                 )
                 .ToListAsync();
-
-            // Log the count of fish to be moved to DeadFish table
-            Console.WriteLine($"{fishToDie.Count} fish found for removal based on hunger or social level.");
-
+    
             foreach (var fish in fishToDie)
             {
-                var causeOfDeath = fish.HungerLevel == 0 && fish.DeathStartTime <= threeDaysAgo 
-                    ? "Starvation"
+                var causeOfDeath = (fish.HungerLevel == 0 && fish.DeathStartTime.HasValue && fish.DeathStartTime.Value <= threeDaysAgo)
+                    ? "Hunger"
                     : "Loneliness";
 
                 var deadFish = new DeadFish
@@ -156,15 +152,12 @@ namespace VIAquarium_API.Services
                     DateOfDeath = DateTime.UtcNow,
                     DateOfBirth = fish.DateOfBirth,
                     DaysLived = (int)(DateTime.UtcNow - fish.DateOfBirth).TotalDays,
-                    RespectCount = 0, // Placeholder or calculated value
+                    RespectCount = 0,
                     CauseOfDeath = causeOfDeath
                 };
 
-                // Log fish details for verification
-                Console.WriteLine($"Moving fish {fish.Name} to DeadFish table. Cause of death: {causeOfDeath}");
-
                 _context.DeadFish.Add(deadFish);
-                _context.Fish.Remove(fish); // Remove from AliveFish
+                _context.Fish.Remove(fish);
             }
 
             await _context.SaveChangesAsync();
