@@ -7,8 +7,6 @@ public class Fish
     public int SocialLevel { get; set; }
     public DateTime LastUpdatedSocial { get; set; }
     public DateTime DateOfBirth { get; set; }
-    public DateTime? DeathStartTime { get; set; } // Time when hunger reached 0
-    public DateTime? SocialDeathStartTime { get; set; } // Time when social reached 0
 
     public Fish(string name)
     {
@@ -31,8 +29,6 @@ public class Fish
         LastUpdatedHunger = DateTime.UtcNow;
         SocialLevel = 100;
         LastUpdatedSocial = DateTime.UtcNow;
-        DeathStartTime = null;
-        SocialDeathStartTime = null;
     }
 
     public void Feed(int amount)
@@ -40,7 +36,6 @@ public class Fish
         HungerLevel += amount;
         if (HungerLevel > 100) HungerLevel = 100;
         LastUpdatedHunger = DateTime.UtcNow;
-        DeathStartTime = null;
     }
 
     public void Pet(int amount)
@@ -48,7 +43,6 @@ public class Fish
         SocialLevel += amount;
         if (SocialLevel > 100) SocialLevel = 100;
         LastUpdatedSocial = DateTime.UtcNow;
-        SocialDeathStartTime = null;
     }
 
     public void GetLonely(int amount)
@@ -57,10 +51,6 @@ public class Fish
         if (SocialLevel < 0) SocialLevel = 0;
         LastUpdatedSocial = DateTime.UtcNow;
         
-        if (SocialLevel == 0 && SocialDeathStartTime == null)
-        {
-            SocialDeathStartTime = DateTime.UtcNow;
-        }
     }
 
     public void GetHungry(int amount)
@@ -69,9 +59,5 @@ public class Fish
         if (HungerLevel < 0) HungerLevel = 0;
         LastUpdatedHunger = DateTime.UtcNow;
 
-        if (HungerLevel == 0 && DeathStartTime == null)
-        {
-            DeathStartTime = DateTime.UtcNow;
-        }
     }
 }
