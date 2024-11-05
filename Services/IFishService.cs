@@ -1,5 +1,3 @@
-namespace VIAquarium_API.Services;
-
 public interface IFishService
 {
     Task<IEnumerable<Fish>> GetAllFish();
@@ -9,6 +7,6 @@ public interface IFishService
     Task<Fish> DecayFishHunger(int fishId);
     Task<Fish> DecayFishSocial(int fishId);
     Task<Fish> FeedFish(int fishId, int howMuch);
-    Task<Fish> PetFish(int fishId, int howMuch);
-
+    Task<Fish> PetFish(int fishId, int howMuch); 
+    Task HandleFishDeaths(); // New method
 }
