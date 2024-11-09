@@ -26,10 +26,15 @@ public class FishController : ControllerBase
 
     // POST: api/fish
     [HttpPost]
-    public async Task<ActionResult<Fish>> PostFish(string fishName)
+    public async Task<ActionResult<Fish>> PostFish(FishCreation fishCreation)
     {
-        Fish fish = await fishService.AddFish(fishName);
-        return CreatedAtAction(nameof(GetFish), new { id = fish.Id }, fish);
+        try
+        {
+            Fish fish = await fishService.AddFish(fishCreation);
+            return CreatedAtAction(nameof(GetFish), new { id = fish.Id }, fish);
+        }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        catch (Exception ex) { return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message }); }
     }
 
     // DELETE: api/fish/5
@@ -51,6 +56,7 @@ public class FishController : ControllerBase
         {
             return BadRequest(ModelState);
         }
+
         Fish fish = await fishService.FeedFish(fishId, feedRequest.hungerPoints);
         return Ok(new
         {

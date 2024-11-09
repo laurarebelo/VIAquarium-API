@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using VIAquarium_API.Models;
 
 namespace VIAquarium_API.Services;
 
@@ -28,9 +29,9 @@ public class FishService : IFishService
         throw new Exception($"Fish {fishId} not found in database");
     }
 
-    public async Task<Fish> AddFish(string fishName)
+    public async Task<Fish> AddFish(FishCreation fishCreationObj)
     {
-        Fish fish = new Fish(fishName);
+        Fish fish = new Fish(fishCreationObj);
         _context.Fish.Add(fish);
         await _context.SaveChangesAsync();
         return fish;

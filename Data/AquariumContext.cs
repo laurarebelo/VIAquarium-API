@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using VIAquarium_API.Models;
 
 public class AquariumContext : DbContext
 {
