@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using VIAquarium_API.Models;
 
 namespace VIAquarium_API.Services
 {
@@ -25,14 +26,13 @@ namespace VIAquarium_API.Services
             var fish = await _context.Fish.FindAsync(fishId);
             return fish ?? throw new Exception($"Fish {fishId} not found in database");
         }
-
-        public async Task<Fish> AddFish(string fishName)
-        {
-            var fish = new Fish(fishName);
-            _context.Fish.Add(fish);
-            await _context.SaveChangesAsync();
-            return fish;
-        }
+    public async Task<Fish> AddFish(FishCreation fishCreationObj)
+    {
+        Fish fish = new Fish(fishCreationObj);
+        _context.Fish.Add(fish);
+        await _context.SaveChangesAsync();
+        return fish;
+    }
 
         public async Task<bool> RemoveFish(int fishId)
         {
