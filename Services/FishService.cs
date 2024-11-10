@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using VIAquarium_API.Models;
 
 namespace VIAquarium_API.Services
 {
@@ -26,9 +27,10 @@ namespace VIAquarium_API.Services
             return fish ?? throw new Exception($"Fish {fishId} not found in database");
         }
 
-        public async Task<Fish> AddFish(string fishName)
+
+        public async Task<Fish> AddFish(FishCreation fishCreationObj)
         {
-            var fish = new Fish(fishName);
+            Fish fish = new Fish(fishCreationObj);
             _context.Fish.Add(fish);
             await _context.SaveChangesAsync();
             return fish;
@@ -102,10 +104,11 @@ namespace VIAquarium_API.Services
             {
                 var updatedFish = await DecayFishHunger(fish.Id);
                 await DecayFishSocial(updatedFish.Id);
-            } 
+            }
+
             await HandleFishDeaths();
             List<Fish> fishListNew = await _context.Fish.ToListAsync();
-            
+
             return fishListNew;
         }
 
@@ -125,14 +128,13 @@ namespace VIAquarium_API.Services
 
         public async Task HandleFishDeaths()
         {
-    
             var fishToDie = await _context.Fish
-                .Where(f => 
+                .Where(f =>
                     (f.HungerLevel == 0) ||
-                    (f.SocialLevel == 0 )
+                    (f.SocialLevel == 0)
                 )
                 .ToListAsync();
-    
+
             foreach (var fish in fishToDie)
             {
                 var causeOfDeath = (fish.HungerLevel == 0)
@@ -152,11 +154,9 @@ namespace VIAquarium_API.Services
                 await _context.DeadFish.AddAsync(deadFish);
                 _context.Fish.Remove(fish);
                 await _context.SaveChangesAsync();
-                
+
                 //if both hunger and loneliness are 0 it will die of hunger, do we care?
-                
             }
         }
-
     }
 }

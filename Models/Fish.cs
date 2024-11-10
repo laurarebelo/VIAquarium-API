@@ -1,3 +1,5 @@
+using VIAquarium_API.Models;
+
 public class Fish
 {
     public int Id { get; set; } // Primary key
@@ -6,12 +8,23 @@ public class Fish
     public DateTime LastUpdatedHunger { get; set; }
     public int SocialLevel { get; set; }
     public DateTime LastUpdatedSocial { get; set; }
+    public string Template { get; set; }
+    public byte[] Sprite { get; set; }
     public DateTime DateOfBirth { get; set; }
+    
+    public Fish(){}
 
-    public Fish(string name)
+    public Fish(FishCreation fishCreationObj)
     {
-        Name = name;
-        DateOfBirth = DateTime.UtcNow;
+        Id = 0;
+        Name = fishCreationObj.name;
+        // validate template type
+        if (!FishTemplate.IsValid(fishCreationObj.template))
+        {
+            throw new ArgumentException($"Invalid template: {fishCreationObj.template}");
+        }
+        Template = fishCreationObj.template;
+        Sprite = Convert.FromBase64String(fishCreationObj.sprite);
         ResetNeeds();
     }
 
@@ -19,6 +32,7 @@ public class Fish
     {
         Id = id;
         Name = name;
+        Template = FishTemplate.Default;
         DateOfBirth = DateTime.UtcNow;
         ResetNeeds();
     }
