@@ -33,8 +33,14 @@ public class FishController : ControllerBase
             Fish fish = await fishService.AddFish(fishCreation);
             return CreatedAtAction(nameof(GetFish), new { id = fish.Id }, fish);
         }
-        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
-        catch (Exception ex) { return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message }); }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+        }
     }
 
     // DELETE: api/fish/5
@@ -49,7 +55,7 @@ public class FishController : ControllerBase
     // =========== FISH NEEDS ============ //
 
     // POST: api/fish/{fishId}/{needType}}
-    [HttpPost("{fishId}/{needType}")]
+    [HttpPatch("{fishId}/{needType}")]
     public async Task<IActionResult> UpdateFishNeeds(int fishId, string needType, [FromBody] NeedsRequest needsRequest)
     {
         if (!ModelState.IsValid)
@@ -57,19 +63,19 @@ public class FishController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        Fish fish = await fishService.FeedFish(fishId, feedRequest.hungerPoints);
-        return Ok(new
+        Fish fish;
+        switch (needType.ToLower())
         {
             case "hunger":
-                fish = await fishService.FeedFish(fishId, needsRequest.hungerPoints);
+                fish = await fishService.FeedFish(fishId, needsRequest.points);
                 return Ok(new { fish.Id, fish.HungerLevel });
 
             case "social":
-                fish = await fishService.PetFish(fishId, needsRequest.socialPoints);
+                fish = await fishService.PetFish(fishId, needsRequest.points);
                 return Ok(new { fish.Id, fish.SocialLevel });
 
             default:
                 return BadRequest("Invalid need type. Use 'hunger' or 'social'.");
-        })
+        }
     }
 }

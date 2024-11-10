@@ -11,8 +11,8 @@ public class Fish
     public string Template { get; set; }
     public byte[] Sprite { get; set; }
     public DateTime DateOfBirth { get; set; }
-
-    public Fish(FishCreation fishCreationObj)
+    
+    public Fish(){}
 
     public Fish(FishCreation fishCreationObj)
     {
@@ -25,33 +25,6 @@ public class Fish
         }
         Template = fishCreationObj.template;
         Sprite = Convert.FromBase64String(fishCreationObj.sprite);
-        ResetNeeds();
-    }
-
-    public Fish() {}
-    
-    public Fish(string name)
-    {
-        Id = 0;
-        Name = fishCreationObj.name;
-        // validate template type
-        if (!FishTemplate.IsValid(fishCreationObj.template))
-        {
-            throw new ArgumentException($"Invalid template: {fishCreationObj.template}");
-        }
-        Template = fishCreationObj.template;
-        Sprite = Convert.FromBase64String(fishCreationObj.sprite);
-        DateOfBirth = DateTime.UtcNow;
-        ResetNeeds();
-    }
-
-    public Fish() {}
-    
-    public Fish(string name)
-    {
-        Name = name;
-        DateOfBirth = DateTime.UtcNow;
-        Template = FishTemplate.Default;
         ResetNeeds();
     }
 

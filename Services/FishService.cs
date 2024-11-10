@@ -21,13 +21,20 @@ namespace VIAquarium_API.Services
             return await DecayAllFishStates();
         }
 
-    public async Task<Fish> AddFish(FishCreation fishCreationObj)
-    {
-        Fish fish = new Fish(fishCreationObj);
-        _context.Fish.Add(fish);
-        await _context.SaveChangesAsync();
-        return fish;
-    }
+        public async Task<Fish> GetFishById(int fishId)
+        {
+            var fish = await _context.Fish.FindAsync(fishId);
+            return fish ?? throw new Exception($"Fish {fishId} not found in database");
+        }
+
+
+        public async Task<Fish> AddFish(FishCreation fishCreationObj)
+        {
+            Fish fish = new Fish(fishCreationObj);
+            _context.Fish.Add(fish);
+            await _context.SaveChangesAsync();
+            return fish;
+        }
 
         public async Task<bool> RemoveFish(int fishId)
         {
@@ -97,10 +104,11 @@ namespace VIAquarium_API.Services
             {
                 var updatedFish = await DecayFishHunger(fish.Id);
                 await DecayFishSocial(updatedFish.Id);
-            } 
+            }
+
             await HandleFishDeaths();
             List<Fish> fishListNew = await _context.Fish.ToListAsync();
-            
+
             return fishListNew;
         }
 
@@ -120,14 +128,13 @@ namespace VIAquarium_API.Services
 
         public async Task HandleFishDeaths()
         {
-    
             var fishToDie = await _context.Fish
-                .Where(f => 
+                .Where(f =>
                     (f.HungerLevel == 0) ||
-                    (f.SocialLevel == 0 )
+                    (f.SocialLevel == 0)
                 )
                 .ToListAsync();
-    
+
             foreach (var fish in fishToDie)
             {
                 var causeOfDeath = (fish.HungerLevel == 0)
@@ -147,11 +154,9 @@ namespace VIAquarium_API.Services
                 await _context.DeadFish.AddAsync(deadFish);
                 _context.Fish.Remove(fish);
                 await _context.SaveChangesAsync();
-                
+
                 //if both hunger and loneliness are 0 it will die of hunger, do we care?
-                
             }
         }
-
     }
 }
