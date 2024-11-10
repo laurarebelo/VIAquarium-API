@@ -21,11 +21,6 @@ namespace VIAquarium_API.Services
             return await DecayAllFishStates();
         }
 
-        public async Task<Fish> GetFishById(int fishId)
-        {
-            var fish = await _context.Fish.FindAsync(fishId);
-            return fish ?? throw new Exception($"Fish {fishId} not found in database");
-        }
     public async Task<Fish> AddFish(FishCreation fishCreationObj)
     {
         Fish fish = new Fish(fishCreationObj);

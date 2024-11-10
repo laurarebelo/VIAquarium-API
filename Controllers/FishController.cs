@@ -57,9 +57,8 @@ public class FishController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        Fish fish;
-
-        switch (needType.ToLower())
+        Fish fish = await fishService.FeedFish(fishId, feedRequest.hungerPoints);
+        return Ok(new
         {
             case "hunger":
                 fish = await fishService.FeedFish(fishId, needsRequest.hungerPoints);
@@ -71,6 +70,6 @@ public class FishController : ControllerBase
 
             default:
                 return BadRequest("Invalid need type. Use 'hunger' or 'social'.");
-        }
+        })
     }
 }
