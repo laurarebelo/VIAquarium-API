@@ -13,6 +13,24 @@ public class Fish
     public DateTime DateOfBirth { get; set; }
 
     public Fish(FishCreation fishCreationObj)
+
+    public Fish(FishCreation fishCreationObj)
+    {
+        Id = 0;
+        Name = fishCreationObj.name;
+        // validate template type
+        if (!FishTemplate.IsValid(fishCreationObj.template))
+        {
+            throw new ArgumentException($"Invalid template: {fishCreationObj.template}");
+        }
+        Template = fishCreationObj.template;
+        Sprite = Convert.FromBase64String(fishCreationObj.sprite);
+        ResetNeeds();
+    }
+
+    public Fish() {}
+    
+    public Fish(string name)
     {
         Id = 0;
         Name = fishCreationObj.name;
