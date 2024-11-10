@@ -7,9 +7,5 @@ public class NeedsRequest
 {
     [Required]
     [Range(1,100)]
-    public int hungerPoints { get; set; }
-
-    [Required]
-    [Range(1,100)]
-    public int socialPoints { get; set; }
+    public int points { get; set; }
 }
