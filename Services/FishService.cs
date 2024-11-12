@@ -158,5 +158,20 @@ namespace VIAquarium_API.Services
                 //if both hunger and loneliness are 0 it will die of hunger, do we care?
             }
         }
+        
+        
+        public async Task<IEnumerable<DeadFish>> GetAllDeadFish()
+        {
+            return await _context.DeadFish.ToListAsync();
+        }
+        
+        // might need
+        // public async Task<IEnumerable<DeadFish>> GetAllDeadFishSortedByDeathDate()
+        // {
+        //     return await _context.DeadFish
+        //         .OrderByDescending(df => df.DateOfDeath)
+        //         .ToListAsync();
+        // }
+        
     }
 }
