@@ -12,5 +12,7 @@ public interface IFishService
     Task<Fish> DecayFishSocial(int fishId);
     Task<Fish> FeedFish(int fishId, int howMuch);
     Task<Fish> PetFish(int fishId, int howMuch); 
-    Task HandleFishDeaths(); // New method
+    Task HandleFishDeaths();
+    Task<IEnumerable<DeadFish>> GetAllDeadFish();
+   // Task<IEnumerable<DeadFish>> GetAllDeadFishSortedByDeathDate(); might need 
 }
