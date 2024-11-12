@@ -16,16 +16,17 @@ public class FishController : ControllerBase
 
     // ======= BASIC ACTIONS ========= //
 
-    // GET: api/fish
-    [HttpGet]
+    // GET: api/fish/alive
+
+    [HttpGet("alive")]
     public async Task<ActionResult<IEnumerable<Fish>>> GetFish()
     {
         var fishList = await fishService.GetAllFish();
         return Ok(fishList);
     }
-    
-    // GET: api/deadfish
-    [HttpGet]
+
+    // GET: api/fish/dead
+    [HttpGet("dead")]
     public async Task<ActionResult<IEnumerable<DeadFish>>> GetAllDeadFish()
     {
         var deadFishList = await fishService.GetAllDeadFish();
