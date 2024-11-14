@@ -18,13 +18,13 @@ public class Fish
     {
         Id = 0;
         Name = fishCreationObj.name;
-        // validate template type
         if (!FishTemplate.IsValid(fishCreationObj.template))
         {
             throw new ArgumentException($"Invalid template: {fishCreationObj.template}");
         }
         Template = fishCreationObj.template;
         Sprite = Convert.FromBase64String(fishCreationObj.sprite);
+        DateOfBirth = DateTime.UtcNow;
         ResetNeeds();
     }
 
