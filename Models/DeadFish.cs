@@ -7,6 +7,8 @@
     public int DaysLived { get; set; }
     public int RespectCount { get; set; } = 0;
     public string CauseOfDeath { get; set; }
+    public string Template { get; set; }
+    public byte[] Sprite { get; set; }
     
     public DeadFish(){}
 }
