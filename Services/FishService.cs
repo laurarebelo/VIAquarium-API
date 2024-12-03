@@ -148,14 +148,14 @@ namespace VIAquarium_API.Services
                     DateOfBirth = fish.DateOfBirth,
                     DaysLived = (int)(DateTime.UtcNow - fish.DateOfBirth).TotalDays,
                     RespectCount = 0,
-                    CauseOfDeath = causeOfDeath
+                    CauseOfDeath = causeOfDeath,
+                    Template = fish.Template,
+                    Sprite = fish.Sprite,
                 };
 
                 await _context.DeadFish.AddAsync(deadFish);
                 _context.Fish.Remove(fish);
                 await _context.SaveChangesAsync();
-
-                //if both hunger and loneliness are 0 it will die of hunger, do we care?
             }
         }
         
@@ -164,14 +164,5 @@ namespace VIAquarium_API.Services
         {
             return await _context.DeadFish.ToListAsync();
         }
-        
-        // might need
-        // public async Task<IEnumerable<DeadFish>> GetAllDeadFishSortedByDeathDate()
-        // {
-        //     return await _context.DeadFish
-        //         .OrderByDescending(df => df.DateOfDeath)
-        //         .ToListAsync();
-        // }
-        
     }
 }
