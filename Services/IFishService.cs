@@ -14,5 +14,4 @@ public interface IFishService
     Task<Fish> PetFish(int fishId, int howMuch); 
     Task HandleFishDeaths();
     Task<IEnumerable<DeadFish>> GetAllDeadFish();
-   // Task<IEnumerable<DeadFish>> GetAllDeadFishSortedByDeathDate(); might need 
 }
