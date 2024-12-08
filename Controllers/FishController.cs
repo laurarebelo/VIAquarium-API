@@ -27,11 +27,16 @@ public class FishController : ControllerBase
 
     // GET: api/fish/dead
     [HttpGet("dead")]
-    public async Task<ActionResult<IEnumerable<DeadFish>>> GetAllDeadFish()
+    public async Task<ActionResult<IEnumerable<DeadFish>>> GetAllDeadFish(
+        string? sortBy = null, 
+        string searchName = null, 
+        int? startIndex = null, 
+        int? endIndex = null)
     {
-        var deadFishList = await fishService.GetAllDeadFish();
+        var deadFishList = await fishService.GetAllDeadFish(sortBy, searchName, startIndex, endIndex);
         return Ok(deadFishList);
     }
+
 
     // POST: api/fish
     [HttpPost]
@@ -50,6 +55,13 @@ public class FishController : ControllerBase
         {
             return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
         }
+    }
+    
+    // POST: api/fish/{id}/kill
+    [HttpPost("{id}/kill")]
+    public async Task<DeadFish> KillFish(int id, [FromQuery] string causeOfDeath = "Hunger")
+    {
+        return await fishService.KillFish(id, causeOfDeath);
     }
 
     // DELETE: api/fish/5
