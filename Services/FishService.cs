@@ -126,6 +126,26 @@ namespace VIAquarium_API.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task<DeadFish> KillFish(int fishId, string causeOfDeath = "Hunger")
+        {
+            var fish = await GetFishById(fishId);
+            var deadFish = new DeadFish
+            {
+                Name = fish.Name,
+                DateOfDeath = DateTime.UtcNow,
+                DateOfBirth = fish.DateOfBirth,
+                DaysLived = (int)(DateTime.UtcNow - fish.DateOfBirth).TotalDays,
+                RespectCount = 0,
+                CauseOfDeath = causeOfDeath,
+                Template = fish.Template,
+                Sprite = fish.Sprite,
+            };
+            await _context.DeadFish.AddAsync(deadFish);
+            _context.Fish.Remove(fish);
+            await _context.SaveChangesAsync();
+            return deadFish;
+        }
+
         public async Task HandleFishDeaths()
         {
             var fishToDie = await _context.Fish
@@ -141,28 +161,57 @@ namespace VIAquarium_API.Services
                     ? "Hunger"
                     : "Loneliness";
 
-                var deadFish = new DeadFish
-                {
-                    Name = fish.Name,
-                    DateOfDeath = DateTime.UtcNow,
-                    DateOfBirth = fish.DateOfBirth,
-                    DaysLived = (int)(DateTime.UtcNow - fish.DateOfBirth).TotalDays,
-                    RespectCount = 0,
-                    CauseOfDeath = causeOfDeath,
-                    Template = fish.Template,
-                    Sprite = fish.Sprite,
-                };
-
-                await _context.DeadFish.AddAsync(deadFish);
-                _context.Fish.Remove(fish);
-                await _context.SaveChangesAsync();
+                await KillFish(fish.Id, causeOfDeath);
             }
         }
         
         
-        public async Task<IEnumerable<DeadFish>> GetAllDeadFish()
+        public async Task<IEnumerable<DeadFish>> GetAllDeadFish(
+            string? sortBy = null, 
+            string? searchName = null, 
+            int? startIndex = null, 
+            int? endIndex = null)
         {
-            return await _context.DeadFish.ToListAsync();
+            var query = _context.DeadFish.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchName))
+            {
+                query = query.Where(fish => EF.Functions.Like(fish.Name, $"%{searchName}%"));
+            }
+
+            if (sortBy != null)
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "lastdied":
+                        query = query.OrderByDescending(fish => fish.DateOfDeath);
+                        break;
+                    case "mostrespect":
+                        query = query.OrderByDescending(fish => fish.RespectCount);
+                        break;
+                    case "mostdayslived":
+                        query = query.OrderByDescending(fish => fish.DaysLived);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (startIndex.HasValue && endIndex.HasValue)
+            {
+                query = query.Skip(startIndex.Value).Take(endIndex.Value - startIndex.Value);
+            }
+            else if (startIndex.HasValue)
+            {
+                query = query.Skip(startIndex.Value);
+            }
+            else if (endIndex.HasValue)
+            {
+                query = query.Take(endIndex.Value);
+            }
+
+            return await query.ToListAsync();
         }
+
     }
 }
