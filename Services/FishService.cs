@@ -126,6 +126,12 @@ namespace VIAquarium_API.Services
             await _context.SaveChangesAsync();
         }
 
+        private async Task UpdateDeadFish(DeadFish deadFish)
+        {
+            _context.DeadFish.Update(deadFish);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<DeadFish> KillFish(int fishId, string causeOfDeath = "Hunger")
         {
             var fish = await GetFishById(fishId);
@@ -164,12 +170,12 @@ namespace VIAquarium_API.Services
                 await KillFish(fish.Id, causeOfDeath);
             }
         }
-        
-        
+
+
         public async Task<IEnumerable<DeadFish>> GetAllDeadFish(
-            string? sortBy = null, 
-            string? searchName = null, 
-            int? startIndex = null, 
+            string? sortBy = null,
+            string? searchName = null,
+            int? startIndex = null,
             int? endIndex = null)
         {
             var query = _context.DeadFish.AsQueryable();
@@ -213,5 +219,18 @@ namespace VIAquarium_API.Services
             return await query.ToListAsync();
         }
 
+        public async Task<DeadFish> GetDeadFishById(int fishId)
+        {
+            var deadFish = await _context.DeadFish.FindAsync(fishId);
+            return deadFish ?? throw new Exception($"Fish {fishId} not found in database");
+        }
+
+        public async Task<DeadFish> RespectDeadFish(int fishId, int howMuch)
+        {
+            var fish = await GetDeadFishById(fishId);
+            fish.Respect(howMuch);
+            await UpdateDeadFish(fish);
+            return fish;
+        }
     }
 }

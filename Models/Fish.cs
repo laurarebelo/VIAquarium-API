@@ -64,7 +64,6 @@ public class Fish
         SocialLevel -= amount;
         if (SocialLevel < 0) SocialLevel = 0;
         LastUpdatedSocial = DateTime.UtcNow;
-        
     }
 
     public void GetHungry(int amount)
@@ -72,6 +71,5 @@ public class Fish
         HungerLevel -= amount;
         if (HungerLevel < 0) HungerLevel = 0;
         LastUpdatedHunger = DateTime.UtcNow;
-
     }
 }
