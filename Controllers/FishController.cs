@@ -99,4 +99,30 @@ public class FishController : ControllerBase
                 return BadRequest("Invalid need type. Use 'hunger' or 'social'.");
         }
     }
+    
+    // POST: api/fish/{id}/respect
+    [HttpPost("dead/{id}/respect")]
+    public async Task<IActionResult> RespectDeadFish(int id, int howMuch)
+    {
+        try
+        {
+            var respectedFish = await fishService.RespectDeadFish(id, howMuch);
+            return Ok(new 
+            { 
+                message = "The dead fish has been respected.", 
+                fishId = respectedFish.Id, 
+                name = respectedFish.Name, 
+                respectedCount = respectedFish.RespectCount 
+            });
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "Dead fish not found." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+        }
+    }
+
 }
