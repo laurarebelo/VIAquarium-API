@@ -11,4 +11,9 @@
     public byte[] Sprite { get; set; }
     
     public DeadFish(){}
+    
+    public void Respect(int amount)
+    {
+        RespectCount += Math.Abs(amount);
+    }
 }
