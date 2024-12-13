@@ -232,5 +232,16 @@ namespace VIAquarium_API.Services
             await UpdateDeadFish(fish);
             return fish;
         }
+
+        public async Task<Fish> ReviveFish(int deadFishId)
+        {
+            var deadFish = await GetDeadFishById(deadFishId);
+            FishCreation revivedFishCreation = new FishCreation(deadFish.Name, deadFish.Template, Convert.ToBase64String(deadFish.Sprite));
+            var revivedFish = new Fish(revivedFishCreation);
+            await _context.Fish.AddAsync(revivedFish);
+            _context.DeadFish.Remove(deadFish);
+            await _context.SaveChangesAsync();
+            return revivedFish;
+        }
     }
 }
