@@ -260,5 +260,19 @@ namespace VIAquarium_API.Services
             await _context.SaveChangesAsync();
             return revivedFish;
         }
+
+        public async Task<List<FishOnlyNeeds>> GetAliveFishNeeds()
+        {
+            await DecayAllFishStates();
+            var allFish = await _context.Fish.ToListAsync();
+            var fishNeedsList = allFish.Select(fish => new FishOnlyNeeds
+            {
+                Id = fish.Id,
+                HungerLevel = fish.HungerLevel,
+                SocialLevel = fish.SocialLevel
+            }).ToList();
+
+            return fishNeedsList;
+        }
     }
 }
