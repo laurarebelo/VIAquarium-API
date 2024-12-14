@@ -61,7 +61,8 @@ public class FishController : ControllerBase
     [HttpPost("{id}/kill")]
     public async Task<DeadFish> KillFish(int id, [FromQuery] string causeOfDeath = "Hunger")
     {
-        return await fishService.KillFish(id, causeOfDeath);
+        DateTime dateOfDeath = DateTime.Today;
+        return await fishService.KillFish(id, dateOfDeath, causeOfDeath);
     }
 
     // DELETE: api/fish/5

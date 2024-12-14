@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -53,8 +54,18 @@ namespace VIAquarium_API.Services
                 int hungerPointsLost = CalculateLossSinceUpdate(fish.LastUpdatedHunger, 100);
                 if (hungerPointsLost > 0)
                 {
-                    fish.GetHungry(hungerPointsLost);
+                    if (hungerPointsLost >= fish.HungerLevel)
+                    {
+                        hungerPointsLost = fish.HungerLevel;
+                        var timeOfDeath = fish.LastUpdatedHunger + TimeSpan.FromMinutes(hungerPointsLost * 100);
+                        return (timeOfDeath, "Hunger");
+                    }
+                    else
+                    {
+                        fish.GetHungry(hungerPointsLost);
+                    }
                 }
+                return (null, null);
             });
         }
 
@@ -65,16 +76,37 @@ namespace VIAquarium_API.Services
                 int socialPointsLost = CalculateLossSinceUpdate(fish.LastUpdatedSocial, 144);
                 if (socialPointsLost > 0)
                 {
-                    fish.GetLonely(socialPointsLost);
+                    if (socialPointsLost >= fish.SocialLevel)
+                    {
+                        socialPointsLost = fish.SocialLevel;
+                        var timeOfDeath = fish.LastUpdatedSocial + TimeSpan.FromMinutes(socialPointsLost * 144);
+                        return (timeOfDeath, "Loneliness");
+                    }
+                    else
+                    {
+                        fish.GetLonely(socialPointsLost);
+                    }
                 }
+
+                return (null, null);
             });
         }
 
-        private async Task<Fish> DecayFishState(int fishId, Action<Fish> decayAction)
+        private async Task<Fish> DecayFishState(int fishId,
+            Func<Fish, (DateTime? timeOfDeath, string? cause)> decayAction)
         {
             var fish = await GetFishById(fishId);
-            decayAction(fish);
-            await UpdateFish(fish);
+            var (timeOfDeath, cause) = decayAction(fish);
+
+            if (timeOfDeath.HasValue && cause != null)
+            {
+                await KillFish(fish.Id, timeOfDeath.Value, cause);
+            }
+            else
+            {
+                await UpdateFish(fish);
+            }
+
             return fish;
         }
 
@@ -103,13 +135,17 @@ namespace VIAquarium_API.Services
             foreach (var fish in allFish)
             {
                 var updatedFish = await DecayFishHunger(fish.Id);
+                if (_context.Entry(updatedFish).State == EntityState.Detached)
+                {
+                    // If the fish died from hunger, no need to check social because
+                    // it would cause an error since it's in the DeadFish table already
+                    continue;
+                }
+
                 await DecayFishSocial(updatedFish.Id);
             }
 
-            await HandleFishDeaths();
-            List<Fish> fishListNew = await _context.Fish.ToListAsync();
-
-            return fishListNew;
+            return await _context.Fish.ToListAsync();
         }
 
         private int CalculateLossSinceUpdate(DateTime lastUpdate, int lossInterval)
@@ -132,15 +168,15 @@ namespace VIAquarium_API.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<DeadFish> KillFish(int fishId, string causeOfDeath = "Hunger")
+        public async Task<DeadFish> KillFish(int fishId, DateTime dateOfDeath, string causeOfDeath = "Hunger")
         {
             var fish = await GetFishById(fishId);
             var deadFish = new DeadFish
             {
                 Name = fish.Name,
-                DateOfDeath = DateTime.UtcNow,
+                DateOfDeath = dateOfDeath,
                 DateOfBirth = fish.DateOfBirth,
-                DaysLived = (int)(DateTime.UtcNow - fish.DateOfBirth).TotalDays,
+                DaysLived = (int)(dateOfDeath - fish.DateOfBirth).TotalDays,
                 RespectCount = 0,
                 CauseOfDeath = causeOfDeath,
                 Template = fish.Template,
@@ -151,26 +187,6 @@ namespace VIAquarium_API.Services
             await _context.SaveChangesAsync();
             return deadFish;
         }
-
-        public async Task HandleFishDeaths()
-        {
-            var fishToDie = await _context.Fish
-                .Where(f =>
-                    (f.HungerLevel == 0) ||
-                    (f.SocialLevel == 0)
-                )
-                .ToListAsync();
-
-            foreach (var fish in fishToDie)
-            {
-                var causeOfDeath = (fish.HungerLevel == 0)
-                    ? "Hunger"
-                    : "Loneliness";
-
-                await KillFish(fish.Id, causeOfDeath);
-            }
-        }
-
 
         public async Task<IEnumerable<DeadFish>> GetAllDeadFish(
             string? sortBy = null,
@@ -236,7 +252,8 @@ namespace VIAquarium_API.Services
         public async Task<Fish> ReviveFish(int deadFishId)
         {
             var deadFish = await GetDeadFishById(deadFishId);
-            FishCreation revivedFishCreation = new FishCreation(deadFish.Name, deadFish.Template, Convert.ToBase64String(deadFish.Sprite));
+            FishCreation revivedFishCreation =
+                new FishCreation(deadFish.Name, deadFish.Template, Convert.ToBase64String(deadFish.Sprite));
             var revivedFish = new Fish(revivedFishCreation);
             await _context.Fish.AddAsync(revivedFish);
             _context.DeadFish.Remove(deadFish);
