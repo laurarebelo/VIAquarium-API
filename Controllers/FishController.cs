@@ -24,6 +24,15 @@ public class FishController : ControllerBase
         var fishList = await fishService.GetAllFish();
         return Ok(fishList);
     }
+    
+    // GET: api/fish/alive/needs
+
+    [HttpGet("alive/needs")]
+    public async Task<ActionResult<IEnumerable<FishOnlyNeeds>>> GetAliveFishNeeds()
+    {
+        var fishList = await fishService.GetAliveFishNeeds();
+        return Ok(fishList);
+    }
 
     // GET: api/fish/dead
     [HttpGet("dead")]
