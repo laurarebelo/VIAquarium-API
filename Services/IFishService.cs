@@ -17,4 +17,5 @@ public interface IFishService
     Task<IEnumerable<DeadFish>> GetAllDeadFish(string? sortBy, string? searchName, int? startIndex, int? endIndex);
     Task<DeadFish> GetDeadFishById(int fishId);
     Task<DeadFish> RespectDeadFish(int fishId, int howMuch);
+    Task<Fish> ReviveFish(int deadFishId);
 }
