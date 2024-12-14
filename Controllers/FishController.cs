@@ -124,5 +124,12 @@ public class FishController : ControllerBase
             return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
         }
     }
+    
+    // POST: api/fish/dead/{id}/revive
+    [HttpPost("dead/{id}/revive")]
+    public async Task<Fish> ReviveFish(int id)
+    {
+        return await fishService.ReviveFish(id);
+    }
 
 }
