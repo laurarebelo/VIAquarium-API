@@ -17,6 +17,7 @@ public class Fish
     public Fish(FishCreation fishCreationObj)
     {
         Id = 0;
+        ValidateName(fishCreationObj.name);
         Name = fishCreationObj.name;
         if (!FishTemplate.IsValid(fishCreationObj.template))
         {
@@ -35,6 +36,23 @@ public class Fish
         Template = FishTemplate.Default;
         DateOfBirth = DateTime.UtcNow;
         ResetNeeds();
+    }
+
+    bool ValidateName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be empty.");
+        }
+        if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[a-zA-Z\s]+$"))
+        {
+            throw new ArgumentException("Name can only contain letters and spaces. No special characters.");
+        }
+        if (name.Length > 20)
+        {
+            throw new ArgumentException("Name can only have a length of maximum 20 characters.");
+        }
+        return true;
     }
 
     private void ResetNeeds()
