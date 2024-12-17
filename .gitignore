@@ -15,3 +15,4 @@ publish/
 !.elasticbeanstalk/*.global.yml
 
 appsettings.Development.json
+appsettings.json
